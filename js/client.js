@@ -9,7 +9,9 @@ var PROJECTS = [
 ];
 
 function fetchIssueTypes(projectKey) {
-  return fetch(CONFIG.WEBHOOK_URL + '?project=' + projectKey)
+  return fetch(CONFIG.WEBHOOK_URL + '?project=' + projectKey, {
+    headers: { 'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN }
+  })
     .then(function(response) {
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des types');
@@ -29,7 +31,10 @@ function createJiraTicket(t, project, issueType) {
 
     return fetch(CONFIG.WEBHOOK_URL + '/create', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN
+      },
       body: JSON.stringify({
         action: 'createTicket',
         project: project,

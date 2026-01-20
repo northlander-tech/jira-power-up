@@ -1,4 +1,5 @@
-// Copiez ce fichier en config.js et remplacez l'URL
+// Copiez ce fichier en config.js et remplacez les valeurs
 var CONFIG = {
-  WEBHOOK_URL: 'https://votre-instance-n8n.com/webhook/votre-id'
+  WEBHOOK_URL: 'https://votre-instance-n8n.com/webhook/votre-id',
+  SECRET_TOKEN: 'votre-token-secret'
 };
