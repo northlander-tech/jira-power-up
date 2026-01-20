@@ -21,41 +21,60 @@ function fetchIssueTypes(projectKey) {
 }
 
 function createJiraTicket(t, project, issueType) {
-  return Promise.all([
-    t.card('id', 'name', 'desc', 'url', 'labels'),
-    t.member('id', 'username', 'fullName', 'email'),
-  ])
-  .then(function(results) {
-    var card = results[0];
-    var member = results[1];
+  var card, memberId, trelloToken;
 
-    return fetch(CONFIG.WEBHOOK_URL + '/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN
-      },
-      body: JSON.stringify({
-        action: 'createTicket',
-        project: project,
-        issueType: issueType,
-        card: card,
-        creator: member
-      })
+  return t.card('id', 'name', 'desc', 'shortLink')
+    .then(function(cardData) {
+      card = cardData;
+      return t.getContext();
+    })
+    .then(function(context) {
+      memberId = context.member;
+      return t.getRestApi().getToken();
+    })
+    .then(function(token) {
+      trelloToken = token;
+      return fetch('https://api.trello.com/1/members/' + memberId + '?key=' + CONFIG.TRELLO_APP_KEY + '&token=' + trelloToken);
     })
     .then(function(response) {
-      if (response.ok) {
-        return t.alert({
-          message: 'Ticket ' + project.key + ' (' + issueType.name + ') créé avec succès !',
-          duration: 5
-        });
-      } else {
-        return t.alert({
-          message: 'Erreur lors de la création du ticket',
-          duration: 5,
-          display: 'error'
-        });
-      }
+      return response.json();
+    })
+    .then(function(member) {
+      return fetch(CONFIG.WEBHOOK_URL + '/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN
+        },
+        body: JSON.stringify({
+          project: project,
+          issueType: issueType,
+          card: card,
+          creator: {
+            id: member.id,
+            username: member.username,
+            fullName: member.fullName,
+            email: member.email
+          },
+          trelloToken: trelloToken
+        })
+      });
+    })
+    .then(function(response) {
+      return response.json().then(function(data) {
+        if (response.ok) {
+          return t.alert({
+            message: 'Ticket ' + project.key + ' (' + issueType.name + ') créé avec succès !',
+            duration: 5
+          });
+        } else {
+          return t.alert({
+            message: data.message || data.error || 'Erreur lors de la création du ticket',
+            duration: 5,
+            display: 'error'
+          });
+        }
+      });
     })
     .catch(function(error) {
       return t.alert({
@@ -64,7 +83,6 @@ function createJiraTicket(t, project, issueType) {
         display: 'error'
       });
     });
-  });
 }
 
 function showIssueTypePopup(t, project) {
@@ -101,24 +119,56 @@ function showIssueTypePopup(t, project) {
     });
 }
 
+function showProjectPopup(t) {
+  return t.popup({
+    title: 'Choisir le projet',
+    items: PROJECTS.map(function(project) {
+      return {
+        text: project.text,
+        callback: function(t) {
+          return showIssueTypePopup(t, project);
+        }
+      };
+    })
+  });
+}
+
 TrelloPowerUp.initialize({
+  'authorization-status': function(t, options) {
+    return t.getRestApi()
+      .isAuthorized()
+      .then(function(isAuthorized) {
+        return { authorized: isAuthorized };
+      });
+  },
+  'show-authorization': function(t, options) {
+    return t.popup({
+      title: 'Autorisation requise',
+      url: './auth.html',
+      height: 140
+    });
+  },
   'card-buttons': function(t, options) {
     return [{
       icon: JIRA_ICON,
       text: 'Créer ticket Jira',
       callback: function(t) {
-        return t.popup({
-          title: 'Choisir le projet',
-          items: PROJECTS.map(function(project) {
-            return {
-              text: project.text,
-              callback: function(t) {
-                return showIssueTypePopup(t, project);
-              }
-            };
-          })
-        });
+        return t.getRestApi()
+          .isAuthorized()
+          .then(function(isTrelloAuthorized) {
+            if (!isTrelloAuthorized) {
+              return t.popup({
+                title: 'Autorisation requise',
+                url: './auth.html',
+                height: 140
+              });
+            }
+            return showProjectPopup(t);
+          });
       }
     }];
   }
+}, {
+  appKey: CONFIG.TRELLO_APP_KEY,
+  appName: 'Jira Power-Up'
 });
