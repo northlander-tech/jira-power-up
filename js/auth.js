@@ -2,16 +2,15 @@
 
 var t = TrelloPowerUp.iframe({
   appKey: CONFIG.TRELLO_APP_KEY,
-  appName: 'Jira Power-Up'
+  appName: 'Jira Power-Up',
+  appAuthor: 'Tikamoon'
 });
 
 t.render(function() {
   return t.sizeTo('#content');
 });
 
-var authBtn = document.getElementById('authorize');
-
-authBtn.addEventListener('click', function() {
+document.getElementById('authorize').addEventListener('click', function() {
   t.getRestApi()
     .authorize({
       scope: 'read,write,account',
@@ -20,7 +19,10 @@ authBtn.addEventListener('click', function() {
     .then(function() {
       return t.closePopup();
     })
+    .catch(TrelloPowerUp.restApiError.AuthDeniedError, function() {
+      console.log('Autorisation annulée par l\'utilisateur');
+    })
     .catch(function(error) {
-      console.error('Authorization error:', error);
+      console.error('Erreur d\'autorisation:', error);
     });
 });
