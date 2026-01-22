@@ -10,7 +10,7 @@ var PROJECTS = [
 
 function fetchIssueTypes(projectKey) {
   return fetch(CONFIG.WEBHOOK_URL + '?project=' + projectKey, {
-    headers: { 'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN }
+    headers: { 'X-App-Key': CONFIG.N8N_APP_KEY }
   })
     .then(function(response) {
       if (!response.ok) {
@@ -44,7 +44,7 @@ function createJiraTicket(t, project, issueType) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + CONFIG.SECRET_TOKEN
+          'X-App-Key': CONFIG.N8N_APP_KEY
         },
         body: JSON.stringify({
           project: project,
