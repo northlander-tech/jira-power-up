@@ -2,5 +2,10 @@
 var CONFIG = {
   WEBHOOK_URL: 'https://votre-instance-n8n.com/webhook/votre-id',
   N8N_APP_KEY: 'votre-app-key',
-  TRELLO_APP_KEY: 'votre-app-key-trello'
+  TRELLO_APP_KEY: 'votre-app-key-trello',
+  LOADER_PHRASES: [
+    'Patience, la magie opère...',
+    'Les hamsters pédalent...',
+    'Connexion avec Jira en cours...'
+  ]
 };

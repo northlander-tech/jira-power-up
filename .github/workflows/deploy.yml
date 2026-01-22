@@ -23,7 +23,7 @@ jobs:
 
       - name: Create config.js from secret
         run: |
-          echo "var CONFIG = { WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}', N8N_APP_KEY: '${{ secrets.N8N_APP_KEY }}', TRELLO_APP_KEY: '${{ secrets.TRELLO_APP_KEY }}' };" > js/config.js
+          echo "var CONFIG = { WEBHOOK_URL: \"${{ secrets.WEBHOOK_URL }}\", N8N_APP_KEY: \"${{ secrets.N8N_APP_KEY }}\", TRELLO_APP_KEY: \"${{ secrets.TRELLO_APP_KEY }}\", LOADER_PHRASES: \"${{ vars.LOADER_PHRASES }}\" };" > js/config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
