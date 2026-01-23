@@ -63,7 +63,7 @@ t.render(function() {
               return t.popup({
                 title: 'Création en cours',
                 url: './create.html',
-                height: 120
+                height: 80
               });
             });
         });

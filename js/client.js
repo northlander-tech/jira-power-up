@@ -19,7 +19,7 @@ function showIssueTypePopup(t, project) {
       return t.popup({
         title: 'Choisir le type',
         url: './issues.html',
-        height: 200
+        height: 80
       });
     });
 }
